@@ -1,0 +1,54 @@
+@charset "UTF-8";
+/* CSS Document */
+
+body {
+	background-color: #E0E0E0;
+	font-family: Gotham, "Helvetica Neue", Helvetica, Arial, "sans-serif"
+}
+
+div.login-box {
+	width: 300px;
+	height: 225px;
+	background-color: white;
+	position: absolute;
+	margin: auto;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	border: thin solid #CCCCCC
+}
+
+p.login-box {
+	padding: 0px 0px 0px 20px;
+}
+
+input.login-box {
+	margin: 0px 0px 0px 20px;
+	height: 20px;
+	width: 250px;
+	font-size: 16px;
+}
+
+input.login-box-button {
+	height:20px; 
+	position: relative;
+	margin: 20px -50px;
+	width:100px; 
+	top:50%; 
+	left:50%;
+}
+
+button {
+	background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 8px 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+	float: right;
+	margin: 19px 24px 0px 0px;
+    font-size: 16px;
+    cursor: pointer;
+}
