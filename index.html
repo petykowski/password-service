@@ -5,11 +5,13 @@
 	</head>
 	<body>
 		<div class="login-box">
-			<p class="login-box">username:</p>
-			<input class="login-box" type="text" autocorrect="off" autocapitalize="off" required>
-			<p class="login-box">password:</p>
-			<input class="login-box" type="password" autocomplete="new-password" required><br>
-			<button type="button" class="button">Sign In</button>
+			<form method="post" action="validate_login.php">
+				<p class="login-box">username:</p>
+				<input class="login-box" type="text" name="username" id="username" autocorrect="off" autocapitalize="off" required>
+				<p class="login-box">password:</p>
+				<input class="login-box" type="password" name="password" id="password" autocomplete="new-password" required><br>
+				<button type="submit" class="button">Sign In</button>
+			</form>
 		</div>
 	</body>
 </html>
