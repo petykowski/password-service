@@ -19,6 +19,30 @@ div.login-box {
 	border: thin solid #CCCCCC
 }
 
+div.signup-box {
+	width: 300px;
+	height: 305px;
+	background-color: white;
+	position: absolute;
+	margin: auto;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	border: thin solid #CCCCCC
+}
+
+div.signup-signin-box {
+	width: 300px;
+	height: 65px;
+	background-color: white;
+	position: inherit;
+	margin: auto;
+	top: 0px;
+	right: 0px;
+	border: thin solid #CCCCCC
+}
+
 p.login-box {
 	padding: 0px 0px 0px 20px;
 }

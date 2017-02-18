@@ -6,6 +6,10 @@ require_once 'config.php';
 $form_username = $_POST["username"];
 $form_password = $_POST["password"];
 
+foreach($_POST as $name => $content) { // Most people refer to $key => $value
+   echo "The HTML name: $name <br>";
+   echo "The content of it: $content <br>";
+}
    //connection to the database
    $con = new mysqli($servername, $sqlusername, $sqlpassword, $sqldbname)
      or die("Unable to connect to MySQL");
