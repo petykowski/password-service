@@ -12,6 +12,8 @@ $sanitized_username = filter_var($username, FILTER_SANITIZE_EMAIL);
 
 $password = $_POST["password"];
 
+$user_id = $_POST["user_id"];
+
 //Connect to Database
 $con = new mysqli($servername, $sqlusername, $sqlpassword, $sqldbname)
 	or die("Unable to connect to MySQL");
@@ -27,11 +29,11 @@ switch ($_POST["action"]) {
 			break;
 		}
 		// Request username from database
-		$check = mysqli_query($con,"SELECT * FROM table1 WHERE Username = '$username'");
+		$check = mysqli_query($con,"SELECT * FROM USERS WHERE EMAIL = '$username'");
 		$check_row = mysqli_fetch_array($check);
 
 		// Return error if provided signup username exsists in database
-		if($check_row["Username"] == $username) {
+		if($check_row["EMAIL"] == $username) {
 			$arr = array('response' => 'Failure', 'message' => 'Username already exsists, please use different username.');
 			echo json_encode($arr);
 		}
@@ -47,23 +49,23 @@ switch ($_POST["action"]) {
 			break;
 		} 
 		
-		$check = mysqli_query($con,"SELECT * FROM table1 WHERE Username = '$username'");
+		$check = mysqli_query($con,"SELECT * FROM USERS WHERE EMAIL = '$username'");
 		$check_row = mysqli_fetch_array($check);
 		
 		// Return error if provided signup username exsists in database
-		if($check_row["Username"] == $username) {
+		if($check_row["EMAIL"] == $username) {
 			$arr = array('response' => 'Failure', 'message' => 'Username already exsists, please use different username.');
 			echo json_encode($arr);
 			break;
 		} else {
 		// Hash password and attempt to create user account
 			$hashpw = password_hash($password, PASSWORD_DEFAULT);
-			$insert = mysqli_query($con,"INSERT INTO table1 (Username, Password, Role) VALUES ('$username', '$hashpw','user')");
-			$result = mysqli_query($con,"SELECT * FROM table1 WHERE Username = '$username'");
+			$insert = mysqli_query($con,"INSERT INTO USERS (EMAIL, PASSWORD) VALUES ('$username', '$hashpw')");
+			$result = mysqli_query($con,"SELECT * FROM USERS WHERE EMAIL = '$username'");
 			$row = mysqli_fetch_array($result);
 
 			// Verifies against database that account was created.
-			if($row["Username"] == $username) {
+			if($row["EMAIL"] == $username) {
 				$arr = array('response' => 'Success', 'message' => 'Your account was created successfully.');
 				echo json_encode($arr);
 			} else {
@@ -76,16 +78,27 @@ switch ($_POST["action"]) {
 	* Compares username and password against database
 	*/
 	case "login":	
-		$result = mysqli_query($con,"SELECT * FROM table1 WHERE Username = '$username'");
+		$result = mysqli_query($con,"SELECT * FROM USERS WHERE EMAIL = '$username'");
 		$row = mysqli_fetch_array($result);
 		
-		if ($row["Username"] == $username && password_verify($password, $row["Password"])) {
+		if ($row["EMAIL"] == $username && password_verify($password, $row["PASSWORD"])) {
 			$arr = array('response' => 'Success', 'message' => 'You are a validated user.');
 			echo json_encode($arr);
 		} else {
 			$arr = array('response' => 'Failure', 'message' => 'Sorry, your credentials are not valid, Please try again.');
 			echo json_encode($arr);
 		}
+		break;
+		
+	case "profile":	
+		$res = mysqli_query($con,"SELECT * FROM USERS WHERE EMAIL = '$username'");
+		$resRow = mysqli_fetch_array($res);
+		$user_id = $resRow["USER_ID"];
+		$result = mysqli_query($con,"SELECT * FROM PROFILE WHERE FK_USER_ID = '$user_id'");
+		$row = mysqli_fetch_array($result);
+		
+		$arr = array('response' => 'Success', 'fullname' => $row["FULL_NAME"], 'bio' => $row["BIO"]);
+		echo json_encode($arr);
 		break;
 }
 ?>
