@@ -82,7 +82,7 @@ switch ($_POST["action"]) {
 		$row = mysqli_fetch_array($result);
 		
 		if ($row["EMAIL"] == $username && password_verify($password, $row["PASSWORD"])) {
-			$arr = array('response' => 'Success', 'message' => 'You are a validated user.');
+			$arr = array('response' => 'Success', 'message' => 'You are a validated user.', 'user_id' => $row["USER_ID"]);
 			echo json_encode($arr);
 		} else {
 			$arr = array('response' => 'Failure', 'message' => 'Sorry, your credentials are not valid, Please try again.');
@@ -91,14 +91,26 @@ switch ($_POST["action"]) {
 		break;
 		
 	case "profile":	
-		$res = mysqli_query($con,"SELECT * FROM USERS WHERE EMAIL = '$username'");
-		$resRow = mysqli_fetch_array($res);
-		$user_id = $resRow["USER_ID"];
 		$result = mysqli_query($con,"SELECT * FROM PROFILE WHERE FK_USER_ID = '$user_id'");
 		$row = mysqli_fetch_array($result);
 		
 		$arr = array('response' => 'Success', 'fullname' => $row["FULL_NAME"], 'bio' => $row["BIO"]);
 		echo json_encode($arr);
+		break;
+		
+	case "update-profile":	
+		$fullname = $_POST["fullname"];
+		$fullname = $con->real_escape_string($fullname);
+		$bio = $_POST["bio"];
+		$bio = $con->real_escape_string($bio);
+		$res = mysqli_query($con,"UPDATE PROFILE SET FULL_NAME='$fullname', BIO='$bio' WHERE FK_USER_ID=$user_id");
+		if ($res) {
+			$arr = array('response' => 'Success', 'fullname' => $fullname, 'bio' => $bio, 'user_id' => $user_id, 'query' => $res);
+			echo json_encode($arr);
+		} else {
+			$arr = array('response' => 'Error', 'fullname' => $fullname, 'bio' => $bio, 'user_id' => $user_id, 'query' => $res);
+			echo json_encode($arr);
+		}
 		break;
 }
 ?>
