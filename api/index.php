@@ -59,7 +59,7 @@ function createUser($con, $user_name, $password)
 			break;
 		} else {
 			// Hash password and attempt to create user account
-			$hashpw = password_hash($pass_word, PASSWORD_DEFAULT);
+			$hashpw = password_hash($password, PASSWORD_DEFAULT);
 			$insert = mysqli_query($con,"INSERT INTO USERS (EMAIL, PASSWORD) VALUES ('$sanitized_user_name', '$hashpw')");
 			$result = mysqli_query($con,"SELECT * FROM USERS WHERE EMAIL = '$sanitized_user_name'");
 			$row = mysqli_fetch_array($result);
