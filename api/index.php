@@ -1,12 +1,12 @@
 <?php
 
-// Prepare for JSON Response
+// Prepare client for JSON response
 header('Content-Type: application/json');
 
-// Access provided by database configuration file
+// Load configuration file to access database
 require_once dirname(__DIR__).'/config.php';
 
-//Connect to Database
+// Establish connection to database
 $con = new mysqli($servername, $sqlusername, $sqlpassword, $sqldbname)
 	or die("Unable to connect to MySQL");
 	
@@ -16,7 +16,7 @@ switch ($_POST["action"]) {
 		break;
 		
 	case "signup":
-		createUser($con, $_POST["username"], $_POST["password"]);
+		createUser($con, $_POST["username"], $_POST["fullname"], $_POST["password"]);
 		break;
 
 	case "login":
@@ -32,72 +32,80 @@ switch ($_POST["action"]) {
 		break;
 }
 
-/**
-* Creates a New User
-* $con: The SQL Server where the query will be executed.
-* $user_name: The username to be assoicated to new account.
-* $password: The password assoicated to the new account.
-*/
-function createUser($con, $user_name, $password)
-{
-		// Verifies no fields are empty
-		if(empty($user_name) || empty($password)) {
-			$arr = array('response' => 'Failure', 'message' => 'Username and password cannot be empty.');
-			echo json_encode($arr);
-			break;
-		} 
-		
-		$sanitized_user_name = filter_var(strtolower($user_name), FILTER_SANITIZE_EMAIL);
-		
-		$check = mysqli_query($con,"SELECT * FROM USERS WHERE EMAIL = '$sanitized_user_name'");
-		$check_row = mysqli_fetch_array($check);
-		
-		// Return error if provided signup username exsists in database
-		if($check_row["EMAIL"] == $sanitized_user_name) {
-			$arr = array('response' => 'Failure', 'message' => 'Username already exsists, please use different username.');
-			echo json_encode($arr);
-			break;
-		} else {
-			// Hash password and attempt to create user account
-			$hashpw = password_hash($password, PASSWORD_DEFAULT);
-			$insert = mysqli_query($con,"INSERT INTO USERS (EMAIL, PASSWORD) VALUES ('$sanitized_user_name', '$hashpw')");
-			$result = mysqli_query($con,"SELECT * FROM USERS WHERE EMAIL = '$sanitized_user_name'");
-			$row = mysqli_fetch_array($result);
-
-			// Verifies against database that account was created.
-			if($row["EMAIL"] == $sanitized_user_name) {
-				$arr = array('response' => 'Success', 'message' => 'Your account was created successfully.');
-				echo json_encode($arr);
-			} else {
-				$arr = array('response' => 'Failure', 'message' => 'Unable to create your account, Please try again.');
-				echo json_encode($arr);
-			}
-		}
-}
 
 /**
 * Determines If Provided Username Already Exsists
 * $con: The SQL Server where the query will be executed.
 * $user_name: The username attempting to login.
 */
-function validateUsername($con, $user_name)
-{
-		$sanitized_user_name = filter_var(strtolower($user_name), FILTER_SANITIZE_EMAIL);
-		if($user_name != $sanitized_user_name){
-			$arr = array('response' => 'Failure', 'message' => 'Username cannot contain special characters.');
-			echo json_encode($arr);
-			break;
-		}
-		// Request username from database
-		$check = mysqli_query($con,"SELECT * FROM USERS WHERE EMAIL = '$user_name'");
-		$check_row = mysqli_fetch_array($check);
+function validateUsername($con, $user_name) {
+	$sanitized_user_name = filter_var(strtolower($user_name), FILTER_SANITIZE_EMAIL);
+	if($user_name != $sanitized_user_name){
+		$arr = array('response' => 'Failure', 'message' => 'Username cannot contain special characters.');
+		echo json_encode($arr);
+		break;
+	}
+	// Request username from database
+	$check = mysqli_query($con,"SELECT * FROM USERS WHERE EMAIL = '$user_name'");
+	$check_row = mysqli_fetch_array($check);
 
-		// Return error if provided signup username exsists in database
-		if($check_row["EMAIL"] == $sanitized_user_name) {
-			$arr = array('response' => 'Failure', 'message' => 'Username already exsists, please use different username.');
+	// Return error if provided signup username exsists in database
+	if($check_row["EMAIL"] == $sanitized_user_name) {
+		$arr = array('response' => 'Failure', 'message' => 'Username already exsists, please use different username.');
+		echo json_encode($arr);
+	}
+}
+
+
+/**
+* Creates a New User
+* $con: The SQL Server where the query will be executed.
+* $user_name: The username to be assoicated to new account.
+* $full_name: The full name to be assoicated to the new user account profile.
+* $password: The password assoicated to the new account.
+*/
+function createUser($con, $user_name, $full_name, $password) {
+	// Verifies no fields are empty
+	if(empty($user_name) || empty($password)) {
+		$arr = array('response' => 'Failure', 'message' => 'Username and password cannot be empty.');
+		echo json_encode($arr);
+		break;
+	} 
+	
+	$sanitized_user_name = filter_var(strtolower($user_name), FILTER_SANITIZE_EMAIL);
+	$full_name = $con->real_escape_string($full_name);
+	
+	$check = mysqli_query($con,"SELECT * FROM USERS WHERE EMAIL = '$sanitized_user_name'");
+	$check_row = mysqli_fetch_array($check);
+	
+	// Return error if provided signup username exsists in database
+	if($check_row["EMAIL"] == $sanitized_user_name) {
+		$arr = array('response' => 'Failure', 'message' => 'Username already exsists, please use different username.');
+		echo json_encode($arr);
+		break;
+	} else {
+		// Hash password and attempt to create user account
+		$hashpw = password_hash($password, PASSWORD_DEFAULT);
+		$insert = mysqli_query($con,"INSERT INTO USERS (EMAIL, PASSWORD) VALUES ('$sanitized_user_name', '$hashpw')");
+		$getID = mysqli_query($con, "SELECT LAST_INSERT_ID() AS USER_ID");
+		$rowID = mysqli_fetch_array($getID);
+		$user_id = $rowID["USER_ID"];
+		$result = mysqli_query($con,"SELECT * FROM USERS WHERE EMAIL = '$sanitized_user_name'");
+		$insertProfile = mysqli_query($con,"INSERT INTO PROFILE (FULL_NAME, FK_USER_ID) VALUES ('$full_name', '$user_id')");
+		$row = mysqli_fetch_array($result);
+		
+
+		// Verifies against database that account was created.
+		if($row["EMAIL"] == $sanitized_user_name) {
+			$arr = array('response' => 'Success', 'message' => 'Your account was created successfully.', 'user_id' => $row["USER_ID"]);
+			echo json_encode($arr);
+		} else {
+			$arr = array('response' => 'Failure', 'message' => 'Unable to create your account, Please try again.');
 			echo json_encode($arr);
 		}
+	}
 }
+
 
 /**
 * Determines If Provided Username and Password Are Valid
@@ -105,19 +113,18 @@ function validateUsername($con, $user_name)
 * $user_name: The username attempting to login.
 * $password: The password assoicated to the login username.
 */
-function validateUserCredentials($con, $user_name, $password)
-{
-		$user_name = filter_var(strtolower($user_name), FILTER_SANITIZE_EMAIL);
-		$result = mysqli_query($con,"SELECT * FROM USERS WHERE EMAIL = '$user_name'");
-		$row = mysqli_fetch_array($result);
-		
-		if ($row["EMAIL"] == $user_name && password_verify($password, $row["PASSWORD"])) {
-			$arr = array('response' => 'Success', 'message' => 'You are a validated user.', 'user_id' => $row["USER_ID"]);
-			echo json_encode($arr);
-		} else {
-			$arr = array('response' => 'Failure', 'message' => 'Sorry, your credentials are not valid, Please try again.');
-			echo json_encode($arr);
-		}
+function validateUserCredentials($con, $user_name, $password) {
+	$user_name = filter_var(strtolower($user_name), FILTER_SANITIZE_EMAIL);
+	$result = mysqli_query($con,"SELECT * FROM USERS WHERE EMAIL = '$user_name'");
+	$row = mysqli_fetch_array($result);
+	
+	if ($row["EMAIL"] == $user_name && password_verify($password, $row["PASSWORD"])) {
+		$arr = array('response' => 'Success', 'message' => 'You are a validated user.', 'user_id' => $row["USER_ID"]);
+		echo json_encode($arr);
+	} else {
+		$arr = array('response' => 'Failure', 'message' => 'Sorry, your credentials are not valid, Please try again.');
+		echo json_encode($arr);
+	}
 }
 
 /**
@@ -125,19 +132,19 @@ function validateUserCredentials($con, $user_name, $password)
 * $con: The SQL Server where the query will be executed.
 * $id: The User ID of the profile to be returned.
 */
-function retrieveUserProfile($con, $id)
-{
-		$result = mysqli_query($con,"SELECT * FROM PROFILE WHERE FK_USER_ID = '$id'");
-		$row = mysqli_fetch_array($result);
-		
-		if ($result) {
-			$arr = array('response' => 'Success', 'message' => 'Returning details of user profile.', 'fullname' => $row["FULL_NAME"], 'bio' => $row["BIO"]);
-			echo json_encode($arr);
-		} else {
-			$arr = array('response' => 'Failure', 'message' => 'Unable to connect to server.');
-			echo json_encode($arr);
-		}
+function retrieveUserProfile($con, $id) {
+	$result = mysqli_query($con,"SELECT * FROM PROFILE WHERE FK_USER_ID = '$id'");
+	$row = mysqli_fetch_array($result);
+
+	if ($result) {
+		$arr = array('response' => 'Success', 'message' => 'Returning details of user profile.', 'user_id' => $id, 'fullname' => $row["FULL_NAME"], 'bio' => $row["BIO"]);
+		echo json_encode($arr);
+	} else {
+		$arr = array('response' => 'Failure', 'message' => 'Unable to connect to server.');
+		echo json_encode($arr);
+	}
 }
+
 
 /**
 * Updates User Profile Details on Database
@@ -146,18 +153,17 @@ function retrieveUserProfile($con, $id)
 * $full_name: The full name of the user.
 * $bio: A short description of the user.
 */
-function updateUserProfile($con, $id, $full_name, $bio)
-{
-		$full_name = $con->real_escape_string($full_name);
-		$bio = $con->real_escape_string($bio);
-		$res = mysqli_query($con,"UPDATE PROFILE SET FULL_NAME='$full_name', BIO='$bio' WHERE FK_USER_ID=$id");
-		if ($res) {
-			$arr = array('response' => 'Success', 'fullname' => $full_name, 'bio' => $bio, 'user_id' => $user_id, 'query' => $res);
-			echo json_encode($arr);
-		} else {
-			$arr = array('response' => 'Error', 'fullname' => $full_name, 'bio' => $bio, 'user_id' => $user_id, 'query' => $res);
-			echo json_encode($arr);
-		}
+function updateUserProfile($con, $id, $full_name, $bio) {
+	$full_name = $con->real_escape_string($full_name);
+	$bio = $con->real_escape_string($bio);
+	$res = mysqli_query($con,"UPDATE PROFILE SET FULL_NAME='$full_name', BIO='$bio' WHERE FK_USER_ID=$id");
+	if ($res) {
+		$arr = array('response' => 'Success', 'fullname' => $full_name, 'bio' => $bio, 'user_id' => $id, 'query' => $res);
+		echo json_encode($arr);
+	} else {
+		$arr = array('response' => 'Error', 'fullname' => $full_name, 'bio' => $bio, 'user_id' => $id, 'query' => $res);
+		echo json_encode($arr);
+	}
 }
 
 ?>
