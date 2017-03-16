@@ -9,12 +9,12 @@ require_once dirname(__DIR__).'/config.php';
 // Establish connection to database
 $con = new mysqli($servername, $sqlusername, $sqlpassword, $sqldbname)
 	or die("Unable to connect to MySQL");
-	
+
 switch ($_POST["action"]) {
 	case "validate_username":
 		validateUsername($con, $_POST["username"]);
 		break;
-		
+
 	case "signup":
 		createUser($con, $_POST["username"], $_POST["fullname"], $_POST["password"]);
 		break;
@@ -22,7 +22,7 @@ switch ($_POST["action"]) {
 	case "login":
 		validateUserCredentials($con, $_POST["username"], $_POST["password"]);
 		break;
-		
+
 	case "profile":	
 		retrieveUserProfile($con, $_POST["user_id"]);
 		break;
@@ -37,7 +37,7 @@ switch ($_POST["action"]) {
 * Determines If Provided Username Already Exsists
 * $con: The SQL Server where the query will be executed.
 * $user_name: The username attempting to login.
-*/
+**/
 function validateUsername($con, $user_name) {
 	$sanitized_user_name = filter_var(strtolower($user_name), FILTER_SANITIZE_EMAIL);
 	if($user_name != $sanitized_user_name){
@@ -63,7 +63,7 @@ function validateUsername($con, $user_name) {
 * $user_name: The username to be assoicated to new account.
 * $full_name: The full name to be assoicated to the new user account profile.
 * $password: The password assoicated to the new account.
-*/
+**/
 function createUser($con, $user_name, $full_name, $password) {
 	// Verifies no fields are empty
 	if(empty($user_name) || empty($password)) {
@@ -93,7 +93,6 @@ function createUser($con, $user_name, $full_name, $password) {
 		$result = mysqli_query($con,"SELECT * FROM USERS WHERE EMAIL = '$sanitized_user_name'");
 		$insertProfile = mysqli_query($con,"INSERT INTO PROFILE (FULL_NAME, FK_USER_ID) VALUES ('$full_name', '$user_id')");
 		$row = mysqli_fetch_array($result);
-		
 
 		// Verifies against database that account was created.
 		if($row["EMAIL"] == $sanitized_user_name) {
@@ -112,7 +111,7 @@ function createUser($con, $user_name, $full_name, $password) {
 * $con: The SQL Server where the query will be executed.
 * $user_name: The username attempting to login.
 * $password: The password assoicated to the login username.
-*/
+**/
 function validateUserCredentials($con, $user_name, $password) {
 	$user_name = filter_var(strtolower($user_name), FILTER_SANITIZE_EMAIL);
 	$result = mysqli_query($con,"SELECT * FROM USERS WHERE EMAIL = '$user_name'");
@@ -127,11 +126,12 @@ function validateUserCredentials($con, $user_name, $password) {
 	}
 }
 
+
 /**
 * Returns All User Profile Details From Database
 * $con: The SQL Server where the query will be executed.
 * $id: The User ID of the profile to be returned.
-*/
+**/
 function retrieveUserProfile($con, $id) {
 	$result = mysqli_query($con,"SELECT * FROM PROFILE WHERE FK_USER_ID = '$id'");
 	$row = mysqli_fetch_array($result);
@@ -152,7 +152,7 @@ function retrieveUserProfile($con, $id) {
 * $id: The User ID of the profile to be updated.
 * $full_name: The full name of the user.
 * $bio: A short description of the user.
-*/
+**/
 function updateUserProfile($con, $id, $full_name, $bio) {
 	$full_name = $con->real_escape_string($full_name);
 	$bio = $con->real_escape_string($bio);
@@ -165,5 +165,6 @@ function updateUserProfile($con, $id, $full_name, $bio) {
 		echo json_encode($arr);
 	}
 }
+
 
 ?>
