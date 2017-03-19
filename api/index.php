@@ -140,7 +140,7 @@ function retrieveUserProfile($con, $id) {
 	$row = mysqli_fetch_array($result);
 
 	if ($result) {
-		$arr = array('response' => 'Success', 'message' => 'Returning details of user profile.', 'user_id' => $id, 'fullname' => $row["FULL_NAME"], 'bio' => $row["BIO"]);
+		$arr = array('response' => 'Success', 'message' => 'Returning details of user profile.', 'user_id' => $id, 'fullname' => $row["FULL_NAME"], 'bio' => $row["BIO"], 'photo' => $row["PICTURE"]);
 		echo json_encode($arr);
 	} else {
 		$arr = array('response' => 'Failure', 'message' => 'Unable to connect to server.');
