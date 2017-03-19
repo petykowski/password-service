@@ -41,7 +41,7 @@ switch ($_POST["action"]) {
 function validateUsername($con, $user_name) {
 	$sanitized_user_name = filter_var(strtolower($user_name), FILTER_SANITIZE_EMAIL);
 	if($user_name != $sanitized_user_name){
-		$arr = array('response' => 'Failure', 'message' => 'Username cannot contain special characters.');
+		$arr = array('response' => 'Failure', 'code' => 10004, 'message' => 'Username cannot contain special characters.');
 		echo json_encode($arr);
 		break;
 	}
@@ -51,7 +51,7 @@ function validateUsername($con, $user_name) {
 
 	// Return error if provided signup username exsists in database
 	if($check_row["EMAIL"] == $sanitized_user_name) {
-		$arr = array('response' => 'Failure', 'message' => 'Username already exsists, please use different username.');
+		$arr = array('response' => 'Failure', 'code' => 10003, 'message' => 'Username already exsists, please use different username.');
 		echo json_encode($arr);
 	}
 }
@@ -67,7 +67,7 @@ function validateUsername($con, $user_name) {
 function createUser($con, $user_name, $full_name, $password) {
 	// Verifies no fields are empty
 	if(empty($user_name) || empty($password)) {
-		$arr = array('response' => 'Failure', 'message' => 'Username and password cannot be empty.');
+		$arr = array('response' => 'Failure', 'code' => 10005, 'message' => 'Username and password cannot be empty.');
 		echo json_encode($arr);
 		break;
 	} 
@@ -80,7 +80,7 @@ function createUser($con, $user_name, $full_name, $password) {
 	
 	// Return error if provided signup username exsists in database
 	if($check_row["EMAIL"] == $sanitized_user_name) {
-		$arr = array('response' => 'Failure', 'message' => 'Username already exsists, please use different username.');
+		$arr = array('response' => 'Failure', 'code' => 10003, 'message' => 'Username already exsists, please use different username.');
 		echo json_encode($arr);
 		break;
 	} else {
@@ -120,8 +120,11 @@ function validateUserCredentials($con, $user_name, $password) {
 	if ($row["EMAIL"] == $user_name && password_verify($password, $row["PASSWORD"])) {
 		$arr = array('response' => 'Success', 'message' => 'You are a validated user.', 'user_id' => $row["USER_ID"]);
 		echo json_encode($arr);
-	} else {
-		$arr = array('response' => 'Failure', 'message' => 'Sorry, your credentials are not valid, Please try again.');
+	} elseif ($row["EMAIL"] == $user_name) {
+		$arr = array('response' => 'Failure', 'code' => 10001, 'message' => 'Sorry, your credentials are not valid, Please try again.');
+		echo json_encode($arr);
+	} elseif ($row["EMAIL"] != $user_name) {
+		$arr = array('response' => 'Failure', 'code' => 10002, 'message' => 'Username not found. Please re-enter credentials and try again.');
 		echo json_encode($arr);
 	}
 }
