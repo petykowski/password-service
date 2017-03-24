@@ -28,7 +28,7 @@ switch ($_POST["action"]) {
 		break;
 
 	case "update-profile":	
-		updateUserProfile($con, $_POST["user_id"], $_POST["fullname"], $_POST["bio"]);
+		updateUserProfile($con, $_POST["user_id"], $_POST["fullname"], $_POST["bio"], $_POST["photo"]);
 		break;
 }
 
@@ -156,10 +156,10 @@ function retrieveUserProfile($con, $id) {
 * $full_name: The full name of the user.
 * $bio: A short description of the user.
 **/
-function updateUserProfile($con, $id, $full_name, $bio) {
+function updateUserProfile($con, $id, $full_name, $bio, $photo) {
 	$full_name = $con->real_escape_string($full_name);
 	$bio = $con->real_escape_string($bio);
-	$res = mysqli_query($con,"UPDATE PROFILE SET FULL_NAME='$full_name', BIO='$bio' WHERE FK_USER_ID=$id");
+	$res = mysqli_query($con,"UPDATE PROFILE SET FULL_NAME='$full_name', BIO='$bio', PICTURE='$photo' WHERE FK_USER_ID=$id");
 	if ($res) {
 		$arr = array('response' => 'Success', 'fullname' => $full_name, 'bio' => $bio, 'user_id' => $id, 'query' => $res);
 		echo json_encode($arr);
@@ -168,6 +168,5 @@ function updateUserProfile($con, $id, $full_name, $bio) {
 		echo json_encode($arr);
 	}
 }
-
 
 ?>
