@@ -30,6 +30,14 @@ switch ($_POST["action"]) {
 	case "update-profile":	
 		updateUserProfile($con, $_POST["user_id"], $_POST["fullname"], $_POST["bio"], $_POST["photo"]);
 		break;
+		
+	case "post":
+		createNewPost($con, $_POST["filename"], $_POST["text"], $_POST["datetime"], $_POST["userid"]);
+		break;
+		
+	case "get-posts":
+		retrievePosts($con);
+		break;
 }
 
 
@@ -165,6 +173,60 @@ function updateUserProfile($con, $id, $full_name, $bio, $photo) {
 		echo json_encode($arr);
 	} else {
 		$arr = array('response' => 'Error', 'fullname' => $full_name, 'bio' => $bio, 'user_id' => $id, 'query' => $res);
+		echo json_encode($arr);
+	}
+}
+
+/**
+* Writes Contents of New Post Details To Database
+* $con: The SQL Server where the query will be executed.
+* $filename: The filename of the post.
+* $text: This is the post text or description.
+* $datetime: This is the time the post was created.
+* $userid: User ID of the user who is creating a new post.
+**/
+function createNewPost($con, $filename, $text, $datetime, $userid) {
+	$query = mysqli_query($con,"INSERT INTO POST (FILENAME, TEXT, DATE_TIME, FK_USER_ID) VALUES ($filename, $text, CURRENT_TIMESTAMP(), $userid)");
+	if ($query) {
+		$arr = array('response' => 'Success');
+		echo json_encode($arr);
+	} else {
+		$arr = array('response' => 'Error');
+		echo json_encode($arr);
+	}
+}
+
+/**
+* Writes Contents of New Post Details To Database
+* $con: The SQL Server where the query will be executed.
+* $filename: The filename of the post.
+* $text: This is the post text or description.
+* $datetime: This is the time the post was created.
+* $userid: User ID of the user who is creating a new post.
+**/
+function retrievePosts($con) {
+	$query = mysqli_query($con,"SELECT POST.*, PROFILE.FULL_NAME, PROFILE.PICTURE FROM POST JOIN PROFILE ON POST.FK_USER_ID = PROFILE.FK_USER_ID");
+	$row = mysqli_fetch_all($query);
+	
+	// Prepare for loop
+	$json = array();
+	
+	if ($query) {
+		foreach ($query as $row) {
+			$jsonBody = array(
+				'filename' => (string) $row["FILENAME"],
+				'text' => (string) $row["TEXT"],
+				'datetime' => (string) $row["DATE_TIME"],
+				'fullname' => (string) $row["FULL_NAME"],
+				'picture' => (string) $row["PICTURE"]
+			);
+			$json[] = array('post' => $jsonBody);
+		}
+		// Free up memory and encode
+		$query->free();
+		echo json_encode($json);
+	} else {
+		$arr = array('response' => 'Error');
 		echo json_encode($arr);
 	}
 }
