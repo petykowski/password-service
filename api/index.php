@@ -197,12 +197,8 @@ function createNewPost($con, $filename, $text, $datetime, $userid) {
 }
 
 /**
-* Writes Contents of New Post Details To Database
+* Returns the most recent posts and their details
 * $con: The SQL Server where the query will be executed.
-* $filename: The filename of the post.
-* $text: This is the post text or description.
-* $datetime: This is the time the post was created.
-* $userid: User ID of the user who is creating a new post.
 **/
 function retrievePosts($con) {
 	$query = mysqli_query($con,"SELECT POST.*, PROFILE.FULL_NAME, PROFILE.PICTURE FROM POST JOIN PROFILE ON POST.FK_USER_ID = PROFILE.FK_USER_ID");
@@ -215,10 +211,11 @@ function retrievePosts($con) {
 		foreach ($query as $row) {
 			$jsonBody = array(
 				'filename' => (string) $row["FILENAME"],
-				'text' => (string) $row["TEXT"],
 				'datetime' => (string) $row["DATE_TIME"],
 				'fullname' => (string) $row["FULL_NAME"],
-				'picture' => (string) $row["PICTURE"]
+				'picture' => (string) $row["PICTURE"],
+				'text' => (string) $row["TEXT"],
+				'location' => (string) $row["LOCATION"]
 			);
 			$json[] = array('post' => $jsonBody);
 		}
